@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#e8c97a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Agendador">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Agendador de Mensagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #18181b;
+    --surface2: #1f1f23;
+    --border: #2e2e35;
+    --accent: #e8c97a;
+    --accent2: #c4a24e;
+    --text: #f0ede6;
+    --muted: #7a7a8a;
+    --danger: #e07070;
+    --success: #7ec99a;
+    --pending: #e8c97a;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 16px);
+    background-image:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(232,201,122,0.07) 0%, transparent 70%);
+  }
+
+  header {
+    text-align: center;
+    padding: 20px 0 24px;
+  }
+
+  header .badge {
+    display: inline-block;
+    background: rgba(232,201,122,0.1);
+    border: 1px solid rgba(232,201,122,0.25);
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  header h1 span { color: var(--accent); }
+
+  header p {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 300;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  input[type="text"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,201,122,0.12);
+  }
+
+  input[type="datetime-local"] { color-scheme: dark; }
+
+  textarea {
+    resize: none;
+    height: 90px;
+    line-height: 1.5;
+  }
+
+  .row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .row .field { flex: 1; margin-bottom: 0; }
+
+  .btn-now {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+
+  .btn-now:active { background: #2e2e35; }
+
+  .repeat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  .repeat-row span { color: var(--text); font-size: 14px; flex: 1; }
+
+  .repeat-row input[type="number"] {
+    width: 60px;
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 15px;
+    border-radius: 8px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #0e0e0f;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 20px rgba(232,201,122,0.25);
+    margin-bottom: 16px;
+  }
+
+  .btn-primary:active { transform: scale(0.98); background: #f0d48a; }
+
+  /* Sync buttons */
+  .sync-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .btn-sync {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .btn-sync:active { background: var(--surface2); }
+  .btn-sync.export { border-color: rgba(126,201,154,0.4); color: var(--success); }
+  .btn-sync.import { border-color: rgba(232,201,122,0.4); color: var(--accent); }
+
+  /* Lista */
+  .lista-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .lista-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .toggle-concluidos {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle-concluidos input { accent-color: var(--accent); width: 14px; height: 14px; }
+
+  .item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    animation: fadeIn 0.25s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .item.pendente { border-color: rgba(232,201,122,0.35); }
+  .item.concluido { opacity: 0.5; }
+
+  .item-info { flex: 1; min-width: 0; }
+
+  .item-titulo {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+
+  .item-msg {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+  }
+
+  .item-data {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(232,201,122,0.08);
+    border: 1px solid rgba(232,201,122,0.18);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  .status-aguardando { background: rgba(122,122,138,0.15); color: var(--muted); border: 1px solid var(--border); }
+  .status-pendente   { background: rgba(232,201,122,0.12); color: var(--accent); border: 1px solid rgba(232,201,122,0.3); }
+  .status-concluido  { background: rgba(126,201,154,0.1);  color: var(--success); border: 1px solid rgba(126,201,154,0.25); }
+
+  .btn-remove {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-remove:active { border-color: var(--danger); color: var(--danger); }
+
+  .empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--muted);
+    font-size: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+  }
+
+  .empty .emoji { font-size: 28px; display: block; margin-bottom: 10px; }
+
+  /* Popup overlay */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .overlay.ativo { display: flex; }
+
+  .popup {
+    background: var(--surface);
+    border: 1px solid rgba(232,201,122,0.35);
+    border-radius: 20px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.85) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .popup-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    animation: pulse 2s infinite;
+    display: block;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  .popup h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .popup-hora {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .popup-msg {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    text-align: left;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+  }
+
+  .btn-fechar {
+    width: 100%;
+    background: var(--accent);
+    color: #0e0e0f;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-fechar:active { background: #f0d48a; }
+
+  .toast {
+    position: fixed;
+    bottom: calc(var(--safe-bottom) + 20px);
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--success);
+    color: var(--success);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    z-index: 2000;
+    white-space: nowrap;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">⏰ Notificações</div>
+  <h1>Agendador de<br><span>Mensagens</span></h1>
+  <p>Lembretes que não deixam esquecer</p>
+</header>
+
+<!-- Formulário -->
+<div class="card">
+  <div class="field">
+    <label>Título</label>
+    <input type="text" id="titulo" placeholder="Ex: Pagar conta, Reunião…" maxlength="80">
+  </div>
+  <div class="field">
+    <label>Mensagem</label>
+    <textarea id="mensagem" placeholder="Conteúdo do lembrete…"></textarea>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>Data e hora</label>
+      <input type="datetime-local" id="data-hora">
+    </div>
+    <button class="btn-now" onclick="usarAgora()">⟳ Agora</button>
+  </div>
+  <div class="field" style="margin-top:14px">
+    <label>Repetir mensalmente</label>
+    <div class="repeat-row">
+      <span>Repetir por mais</span>
+      <input type="number" id="repetir" value="0" min="0" max="23">
+      <span>meses</span>
+    </div>
+  </div>
+</div>
+
+<button class="btn-primary" onclick="agendar()">✦ Agendar Mensagem</button>
+
+<!-- Sincronização -->
+<div class="sync-row">
+  <button class="btn-sync export" onclick="exportar()">↑ Exportar JSON</button>
+  <button class="btn-sync import" onclick="document.getElementById('file-input').click()">↓ Importar JSON</button>
+</div>
+<input type="file" id="file-input" accept=".json" onchange="importar(event)">
+
+<!-- Lista -->
+<div class="lista-header">
+  <h2>Agendamentos</h2>
+  <label class="toggle-concluidos">
+    <input type="checkbox" id="ocultar" checked onchange="renderLista()">
+    Ocultar concluídos
+  </label>
+</div>
+
+<div id="lista"></div>
+
+<!-- Popup -->
+<div class="overlay" id="overlay">
+  <div class="popup">
+    <span class="popup-icon">🔔</span>
+    <h2 id="popup-titulo"></h2>
+    <div class="popup-hora" id="popup-hora"></div>
+    <div class="popup-msg" id="popup-msg"></div>
+    <button class="btn-fechar" onclick="fecharPopup()">✓ Entendido, fechar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Storage ──────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'agendamentos_v1';
+
+function carregar() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function salvar(dados) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function proximoMes(dt, meses) {
+  const d = new Date(dt);
+  const dia = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + meses);
+  const ultimo = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(dia, ultimo));
+  return d;
+}
+
+function fmtDt(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── UI ────────────────────────────────────────────────────────────────────────
+function usarAgora() {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  document.getElementById('data-hora').value = now.toISOString().slice(0, 16);
+}
+
+// set min datetime
+const dtInput = document.getElementById('data-hora');
+const n = new Date(); n.setSeconds(0,0);
+dtInput.min = n.toISOString().slice(0,16);
+
+function agendar() {
+  const titulo = document.getElementById('titulo').value.trim();
+  const msg    = document.getElementById('mensagem').value.trim();
+  const dt     = document.getElementById('data-hora').value;
+  const rep    = parseInt(document.getElementById('repetir').value) || 0;
+
+  if (!titulo) return shake('titulo');
+  if (!msg)    return shake('mensagem');
+  if (!dt)     return shake('data-hora');
+  if (new Date(dt) <= new Date()) return shake('data-hora');
+
+  const dados = carregar();
+  const total = rep + 1;
+  const base  = new Date(dt);
+
+  for (let i = 0; i < total; i++) {
+    const data = proximoMes(base, i);
+    const sufixo = total > 1 ? ` (${i+1}/${total})` : '';
+    dados.push({
+      id: Date.now().toString() + i,
+      titulo: titulo + sufixo,
+      msg,
+      dt: data.toISOString().slice(0, 16),
+      fechado: false
+    });
+  }
+
+  salvar(dados);
+  renderLista();
+  agendarNotificacoes(dados);
+
+  document.getElementById('titulo').value = '';
+  document.getElementById('mensagem').value = '';
+  document.getElementById('repetir').value = '0';
+
+  toast(total > 1 ? `${total} agendamentos criados!` : 'Mensagem agendada!');
+}
+
+function shake(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--danger)';
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'shake 0.3s ease';
+  setTimeout(() => { el.style.borderColor = ''; el.style.animation = ''; }, 1000);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderLista() {
+  const lista   = document.getElementById('lista');
+  const ocultar = document.getElementById('ocultar').checked;
+  const dados   = carregar();
+  const agora   = new Date();
+
+  const sorted = [...dados].sort((a, b) => new Date(a.dt) - new Date(b.dt));
+  const visiveis = sorted.filter(i => !(ocultar && i.fechado));
+
+  if (visiveis.length === 0) {
+    lista.innerHTML = `<div class="empty"><span class="emoji">📭</span>Nenhum agendamento aqui.</div>`;
+    return;
+  }
+
+  lista.innerHTML = visiveis.map(item => {
+    const dt      = new Date(item.dt);
+    const passado = dt <= agora;
+    const cls     = item.fechado ? 'concluido' : passado ? 'pendente' : '';
+    const status  = item.fechado ? 'concluido' : passado ? 'pendente' : 'aguardando';
+    const label   = item.fechado ? '✓ Concluído' : passado ? '⚠ Pendente' : '⏳ Aguardando';
+
+    return `
+      <div class="item ${cls}">
+        <div class="item-info">
+          <div class="item-titulo">${esc(item.titulo)}</div>
+          <div class="item-msg">${esc(item.msg)}</div>
+          <div class="item-data">⏱ ${dt.toLocaleDateString('pt-BR')} ${dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+        <div class="item-right">
+          <span class="status-badge status-${status}">${label}</span>
+          <button class="btn-remove" onclick="remover('${item.id}')">Remover</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function remover(id) {
+  const dados = carregar().filter(i => i.id !== id);
+  salvar(dados);
+  renderLista();
+}
+
+// ── Popup ─────────────────────────────────────────────────────────────────────
+let _popupId = null;
+
+function mostrarPopup(item) {
+  _popupId = item.id;
+  document.getElementById('popup-titulo').textContent = item.titulo;
+  document.getElementById('popup-msg').textContent    = item.msg;
+  document.getElementById('popup-hora').textContent   = 'Agendado para ' + fmtDt(item.dt);
+  document.getElementById('overlay').classList.add('ativo');
+}
+
+function fecharPopup() {
+  document.getElementById('overlay').classList.remove('ativo');
+  if (_popupId) {
+    const dados = carregar();
+    dados.forEach(i => { if (i.id === _popupId) i.fechado = true; });
+    salvar(dados);
+    renderLista();
+    _popupId = null;
+  }
+}
+
+// ── Verificador ───────────────────────────────────────────────────────────────
+const _mostrados = new Set();
+
+function verificar() {
+  const agora = new Date();
+  carregar().forEach(item => {
+    if (item.fechado || _mostrados.has(item.id)) return;
+    if (new Date(item.dt) <= agora) {
+      _mostrados.add(item.id);
+      setTimeout(() => mostrarPopup(item), _mostrados.size * 600);
+    }
+  });
+}
+
+setInterval(verificar, 10000);
+verificar();
+
+// ── Notificações nativas ──────────────────────────────────────────────────────
+function agendarNotificacoes(dados) {
+  if (!('Notification' in window) || !navigator.serviceWorker) return;
+  if (Notification.permission !== 'granted') {
+    Notification.requestPermission();
+    return;
+  }
+  navigator.serviceWorker.ready.then(reg => {
+    dados.forEach(item => {
+      if (item.fechado) return;
+      const delay = new Date(item.dt) - new Date();
+      if (delay > 0) {
+        reg.active && reg.active.postMessage({
+          type: 'SCHEDULE', id: item.id, titulo: item.titulo, msg: item.msg, delay
+        });
+      }
+    });
+  });
+}
+
+// ── Exportar / Importar ───────────────────────────────────────────────────────
+function exportar() {
+  const dados = carregar();
+  const blob  = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement('a');
+  a.href      = url;
+  a.download  = 'agendamentos.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Arquivo exportado!');
+}
+
+function importar(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const dados = JSON.parse(ev.target.result);
+      if (!Array.isArray(dados)) throw new Error();
+      salvar(dados);
+      renderLista();
+      agendarNotificacoes(dados);
+      toast(`${dados.length} agendamentos importados!`);
+    } catch {
+      toast('Arquivo inválido!');
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+  e.target.value = '';
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let _toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Service Worker ────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(() => {
+    if (Notification.permission === 'default') Notification.requestPermission();
+    agendarNotificacoes(carregar());
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderLista();
+</script>
+
+<style>
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+</style>
+</body>
+</html>
