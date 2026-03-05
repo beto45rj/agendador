@@ -544,8 +544,24 @@ function proximoMes(dt, meses) {
   return d;
 }
 
-function fmtDt(iso) {
-  const d = new Date(iso);
+// Converte Date para string "YYYY-MM-DDTHH:MM" no horário LOCAL (sem UTC shift)
+function toLocalDtString(d) {
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate())
+       + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+// Converte string "YYYY-MM-DDTHH:MM" para Date interpretando como horário LOCAL
+function parseDtLocal(str) {
+  // Adiciona segundos para garantir parse correto sem UTC
+  const [datePart, timePart] = str.split('T');
+  const [y, mo, d] = datePart.split('-').map(Number);
+  const [h, mi]    = timePart.split(':').map(Number);
+  return new Date(y, mo - 1, d, h, mi, 0, 0);
+}
+
+function fmtDt(str) {
+  const d = parseDtLocal(str);
   return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
@@ -553,13 +569,13 @@ function fmtDt(iso) {
 function usarAgora() {
   const now = new Date();
   now.setSeconds(0, 0);
-  document.getElementById('data-hora').value = now.toISOString().slice(0, 16);
+  document.getElementById('data-hora').value = toLocalDtString(now);
 }
 
 // set min datetime
 const dtInput = document.getElementById('data-hora');
 const n = new Date(); n.setSeconds(0,0);
-dtInput.min = n.toISOString().slice(0,16);
+dtInput.min = toLocalDtString(n);
 
 function agendar() {
   const titulo = document.getElementById('titulo').value.trim();
@@ -570,11 +586,11 @@ function agendar() {
   if (!titulo) return shake('titulo');
   if (!msg)    return shake('mensagem');
   if (!dt)     return shake('data-hora');
-  if (new Date(dt) <= new Date()) return shake('data-hora');
+  if (parseDtLocal(dt) <= new Date()) return shake('data-hora');
 
   const dados = carregar();
   const total = rep + 1;
-  const base  = new Date(dt);
+  const base  = parseDtLocal(dt);
 
   for (let i = 0; i < total; i++) {
     const data = proximoMes(base, i);
@@ -583,7 +599,7 @@ function agendar() {
       id: Date.now().toString() + i,
       titulo: titulo + sufixo,
       msg,
-      dt: data.toISOString().slice(0, 16),
+      dt: toLocalDtString(data),
       fechado: false
     });
   }
@@ -615,7 +631,7 @@ function renderLista() {
   const dados   = carregar();
   const agora   = new Date();
 
-  const sorted = [...dados].sort((a, b) => new Date(a.dt) - new Date(b.dt));
+  const sorted = [...dados].sort((a, b) => parseDtLocal(a.dt) - parseDtLocal(b.dt));
   const visiveis = sorted.filter(i => !(ocultar && i.fechado));
 
   if (visiveis.length === 0) {
@@ -624,7 +640,7 @@ function renderLista() {
   }
 
   lista.innerHTML = visiveis.map(item => {
-    const dt      = new Date(item.dt);
+    const dt      = parseDtLocal(item.dt);
     const passado = dt <= agora;
     const cls     = item.fechado ? 'concluido' : passado ? 'pendente' : '';
     const status  = item.fechado ? 'concluido' : passado ? 'pendente' : 'aguardando';
@@ -684,7 +700,7 @@ function verificar() {
   const agora = new Date();
   carregar().forEach(item => {
     if (item.fechado || _mostrados.has(item.id)) return;
-    if (new Date(item.dt) <= agora) {
+    if (parseDtLocal(item.dt) <= agora) {
       _mostrados.add(item.id);
       setTimeout(() => mostrarPopup(item), _mostrados.size * 600);
     }
@@ -704,7 +720,7 @@ function agendarNotificacoes(dados) {
   navigator.serviceWorker.ready.then(reg => {
     dados.forEach(item => {
       if (item.fechado) return;
-      const delay = new Date(item.dt) - new Date();
+      const delay = parseDtLocal(item.dt) - new Date();
       if (delay > 0) {
         reg.active && reg.active.postMessage({
           type: 'SCHEDULE', id: item.id, titulo: item.titulo, msg: item.msg, delay
